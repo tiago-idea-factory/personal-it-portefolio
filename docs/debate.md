@@ -52,6 +52,16 @@ Every debate round targets one version. A round ends with a conclusion that feed
   5. Is a public domain planned? On a LAN-only address (192.168.1.20) LinkedIn previews and SEO cannot work fully; the plan should state this limit and keep the base URL configurable.
   6. Any "blog coming soon" teaser, or nothing until v0.2.0? Suggested: nothing.
 
+### Architect — technical proposal for v0.1.0
+- **Architect:** (v0.1.0) Stack: plain HTML + CSS, no framework, no runtime JS needed. All content must be in static HTML so crawlers and ATS see it with JS disabled.
+- **Architect:** (v0.1.0) Deliverable folder (`publish_dir` = `site/`): `index.html`, `assets/style.css`, `assets/img/` (photo, `og-image.png` 1200x630), `cv/<name>-cv.pdf`, `robots.txt`, `sitemap.xml`, `404.html`. Helper scripts in `scripts/`.
+- **Architect:** (v0.1.0) Data storage: nothing at runtime (no IndexedDB, no cookies, no analytics). Content lives in one source file `content/profile.json` (name, headline, summary, roles, skills, education, certifications, links).
+- **Architect:** (v0.1.0) Option A (recommended): `scripts/build.sh` (bash plus a tiny dependency-free Node or Python script) renders `content/profile.json` into `site/index.html` (including the JSON-LD Person block), `sitemap.xml` and `robots.txt`, using one `BASE_URL` variable. The same JSON is reused by v0.2.0. The build fails on leftover placeholders (a `TODO-PLACEHOLDER` marker) and on missing files, covering the analyst's edge cases. Generated `site/` is committed so Caddy can serve it even without a build.
+- **Architect:** (v0.1.0) Option B: edit `site/index.html` by hand, with JSON-LD and metadata inline. Zero tooling, but content, JSON-LD and the CV drift out of sync and v0.2.0 would need a refactor.
+- **Architect:** (v0.1.0) Recommendation: Option A, kept deliberately small (one template, one script, no npm packages). For v0.2.0 the blog fits as Markdown files in `content/posts/` rendered by the same script into `site/posts/<slug>/index.html`, with per-post Open Graph tags and an RSS feed.
+- **Architect:** (v0.1.0) Main risks: (1) LinkedIn previews and SEO cannot fully work on a LAN-only address; BASE_URL stays configurable and a public domain is a later step outside the factory setup. (2) CV PDF out of sync with the page; mitigate with a build check on key fields, or generate the PDF from the page via print CSS (analyst question 3). (3) Lighthouse >= 90 is easy with static files if images are optimised and fonts are system fonts (no third-party requests). (4) Placeholders shipped by mistake; the build check covers it. (5) Privacy: only public contact fields Tiago confirms.
+- **Architect:** (v0.1.0) Verification: `scripts/check.sh` (HTML well-formed, JSON-LD parses, required meta tags present, page weight under 500 KB excluding PDF, no external requests); Lighthouse run manually.
+
 ### Conclusion (draft, awaiting round table)
 - Proposed scope for v0.1.0: portfolio landing page optimised for recruiters, search engines and bots.
 - Postponed to v0.2.0: blog/posts.
