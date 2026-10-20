@@ -1,0 +1,11 @@
+{
+  "id": "my-idea",
+  "title": "My Idea",
+  "summary": "One or two sentences describing the idea.",
+  "kind": "site",
+  "status": "idea",
+  "created": "YYYY-MM-DD",
+  "tags": [],
+  "port": 0,
+  "publish_dir": "site"
+}

@@ -1,0 +1,129 @@
+# Deploys a released version of this idea to the home lab (Caddy, CT 100) via the
+# self-hosted runner. See docs/process.md §4 (releasing) and §6 (rolling back).
+name: Deploy
+
+on:
+  release:
+    types: [published]
+  workflow_dispatch:
+    inputs:
+      version:
+        description: "Release tag to deploy or roll back to (e.g. v0.2.0)"
+        required: true
+
+concurrency:
+  group: deploy-${{ github.repository }}
+  cancel-in-progress: false
+
+permissions:
+  contents: read
+
+env:
+  CADDY_SSH: deploy@192.168.1.20
+  CADDY_URL: http://192.168.1.20
+
+jobs:
+  deploy:
+    runs-on: [self-hosted, homelab]
+    steps:
+      - name: Resolve version
+        id: v
+        env:
+          RELEASE_TAG: ${{ github.event.release.tag_name }}
+          INPUT_TAG: ${{ inputs.version }}
+        run: |
+          TAG="${RELEASE_TAG:-$INPUT_TAG}"
+          if ! [[ "$TAG" =~ ^v[0-9]+\.[0-9]+\.[0-9]+$ ]]; then
+            echo "::error::Invalid version '$TAG' (expected vX.Y.Z)"; exit 1
+          fi
+          echo "tag=$TAG" >> "$GITHUB_OUTPUT"
+
+      - uses: actions/checkout@v4
+        with:
+          ref: ${{ steps.v.outputs.tag }}
+
+      - name: Read and validate idea.json
+        id: idea
+        run: |
+          ID=$(jq -r '.id' idea.json)
+          KIND=$(jq -r '.kind // "site"' idea.json)
+          PORT=$(jq -r '.port' idea.json)
+          DIR=$(jq -r '.publish_dir // "site"' idea.json)
+          [[ "$ID" =~ ^[a-z0-9][a-z0-9-]*$ ]] || { echo "::error::idea.json: invalid id '$ID'"; exit 1; }
+          [[ "$ID" != "my-idea" ]] || { echo "::error::idea.json still has the template id"; exit 1; }
+          [[ "$KIND" =~ ^(site|report)$ ]] || { echo "::error::idea.json: kind must be site or report"; exit 1; }
+          [[ "$PORT" =~ ^[0-9]+$ ]] && (( PORT >= 8081 && PORT <= 8999 )) || { echo "::error::idea.json: port must be 8081-8999 (got '$PORT')"; exit 1; }
+          [[ "$DIR" =~ ^[A-Za-z0-9._/-]+$ && "$DIR" != *..* ]] || { echo "::error::idea.json: invalid publish_dir"; exit 1; }
+          { echo "id=$ID"; echo "kind=$KIND"; echo "port=$PORT"; echo "dir=$DIR"; } >> "$GITHUB_OUTPUT"
+
+      - name: Build (optional)
+        run: |
+          if [ -x scripts/build.sh ]; then scripts/build.sh; else echo "No scripts/build.sh, publishing files as-is"; fi
+
+      - name: Upload release
+        env:
+          ID: ${{ steps.idea.outputs.id }}
+          DIR: ${{ steps.idea.outputs.dir }}
+          TAG: ${{ steps.v.outputs.tag }}
+        run: |
+          [ -d "$DIR" ] && [ -n "$(ls -A "$DIR")" ] || { echo "::error::publish_dir '$DIR' is missing or empty"; exit 1; }
+          ssh -o BatchMode=yes "$CADDY_SSH" "mkdir -p /srv/sites/$ID/releases/$TAG"
+          rsync -a --delete -e "ssh -o BatchMode=yes" "$DIR/" "$CADDY_SSH:/srv/sites/$ID/releases/$TAG/"
+
+      - name: Activate release and configure Caddy
+        env:
+          ID: ${{ steps.idea.outputs.id }}
+          PORT: ${{ steps.idea.outputs.port }}
+          TAG: ${{ steps.v.outputs.tag }}
+        run: |
+          ssh -o BatchMode=yes "$CADDY_SSH" "ID=$ID PORT=$PORT TAG=$TAG bash -s" <<'REMOTE'
+          set -euo pipefail
+          ln -sfn "releases/$TAG" "/srv/sites/$ID/current"
+          conf="/etc/caddy/sites/$ID.caddy"
+          # The port must not be used by another idea
+          for other in /etc/caddy/sites/*.caddy; do
+            [ -e "$other" ] && [ "$other" != "$conf" ] || continue
+            if grep -q "^:$PORT {" "$other"; then echo "::error::Port $PORT already used by $(basename "$other")"; exit 1; fi
+          done
+          new=$(printf ':%s {\n\troot * /srv/sites/%s/current\n\tfile_server\n}' "$PORT" "$ID")
+          if [ ! -f "$conf" ] || [ "$(cat "$conf")" != "$new" ]; then
+            old=$(cat "$conf" 2>/dev/null || true)
+            printf '%s\n' "$new" > "$conf"
+            if ! sudo -n caddy validate --config /etc/caddy/Caddyfile >/dev/null 2>&1; then
+              if [ -n "$old" ]; then printf '%s\n' "$old" > "$conf"; else rm -f "$conf"; fi
+              echo "::error::Caddy config invalid, change reverted"; exit 1
+            fi
+            sudo -n systemctl reload caddy
+            echo "Caddy config updated and reloaded"
+          fi
+          echo "Active: $(readlink "/srv/sites/$ID/current")"
+          REMOTE
+
+      - name: Update landing page
+        env:
+          TAG: ${{ steps.v.outputs.tag }}
+          PORT: ${{ steps.idea.outputs.port }}
+          REPO_URL: ${{ github.server_url }}/${{ github.repository }}
+        run: |
+          ENTRY=$(jq -c --arg v "${TAG#v}" --arg url "$CADDY_URL:$PORT/" --arg repo "$REPO_URL" '
+            {id, title, summary, status, created, tags, version: $v,
+             links: ({site: null, report: null, repo: $repo}
+                     + (if .kind == "report" then {report: $url} else {site: $url} end))}' idea.json)
+          ssh -o BatchMode=yes "$CADDY_SSH" "cat /srv/sites/_home/ideas.json" > ideas.current.json
+          jq --argjson e "$ENTRY" --arg today "$(date +%F)" '
+            .updated = $today
+            | if any(.ideas[]; .id == $e.id)
+              then .ideas |= map(if .id == $e.id then $e else . end)
+              else .ideas += [$e] end' ideas.current.json > ideas.new.json
+          ssh -o BatchMode=yes "$CADDY_SSH" "cat > /srv/sites/_home/ideas.json.tmp && mv /srv/sites/_home/ideas.json.tmp /srv/sites/_home/ideas.json" < ideas.new.json
+          echo "Landing page updated: $(jq -c '{id, status, version}' <<< "$ENTRY")"
+
+      - name: Smoke test
+        env:
+          PORT: ${{ steps.idea.outputs.port }}
+          TAG: ${{ steps.v.outputs.tag }}
+        run: |
+          code=$(curl -s -o /dev/null -w "%{http_code}" "$CADDY_URL:$PORT/")
+          echo "GET $CADDY_URL:$PORT/ → HTTP $code"
+          [ "$code" = "200" ] || { echo "::error::Site not responding with 200"; exit 1; }
+          echo "### 🚀 Deployed $TAG → $CADDY_URL:$PORT/" >> "$GITHUB_STEP_SUMMARY"
