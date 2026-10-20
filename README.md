@@ -1,6 +1,6 @@
-# My Idea
+# Personal IT portefolio
 
-> One or two sentences describing the idea. Keep in sync with `idea.json`.
+> I want to have a small like blog post, it can be used like githubs page, its main purpose is to make like 2 post per month to boost linked in activity, it should on its landing page be a portfolio lik
 
 | | |
 |---|---|
