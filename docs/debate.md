@@ -103,6 +103,9 @@ Every debate round targets one version. A round ends with a conclusion that feed
 - **Devil's Advocate:** (v0.1.0) Privacy, new point after the Architect's public-domain note. Once `site/` is exposed publicly, the CV PDF and page become permanently indexable and cached. The spec should require that Tiago confirms each public contact field and that the PDF contains no phone number or home address unless he chose to include it; `check.sh --release` could grep the PDF text and page for obvious phone/address patterns as a warning.
 - **Devil's Advocate:** (v0.1.0) Still unanswered and the most important question for Tiago before approval: is a public domain realistic, and until then is "ready to publish, structurally verified" an acceptable definition of done for v0.1.0? I propose the spec says exactly that, so nobody later reads a LAN-only release as the goal achieved.
 
-### Conclusion (draft, awaiting round table)
-- Proposed scope for v0.1.0: portfolio landing page optimised for recruiters, search engines and bots.
-- Postponed to v0.2.0: blog/posts.
+### Conclusion
+- Agreed scope for v0.1.0: F-001 Portfolio page (hand-written HTML/CSS, SEO, Open Graph, JSON-LD, robots, sitemap) and F-002 Release check and CV link (`scripts/check.sh`, `--release` mode).
+- Cut / postponed: blog and RSS (v0.2.0, not pre-committed); content generator and build script (too heavy for one page); print CSS, custom 404, Lighthouse CI, extra Twitter tags, analytics, multi-language, teaser (not needed for the smallest useful version).
+- Definition of done for v0.1.0: ready to publish and structurally verified; LinkedIn preview and indexing depend on a public domain.
+- Critical path: Tiago's content (LinkedIn URL, public contact fields, photo, CV PDF, keywords). Release is blocked while `TODO-PLACEHOLDER` remains.
+- ✋ Approved by Tiago: no — pending
