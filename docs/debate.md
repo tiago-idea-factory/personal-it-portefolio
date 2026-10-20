@@ -234,3 +234,8 @@ This supersedes the earlier "### Conclusion" sections above, which are kept for 
 - Recommended: hold the v0.1.0 release until Tiago's content, Pages settings and URL acceptance are in, so v0.1.0 means "published". If he prefers an early LAN-only release, a green Caddy run next to a red `pages.yml` run is expected.
 - Tiago's own steps: (1) informed yes that the whole repo is public; (2) accept the temporary Pages URL, or decide on a custom domain or `<user>.github.io` before the first LinkedIn share; (3) enable Pages with source "GitHub Actions" and allow the release tag in the `github-pages` environment; (4) LinkedIn URL, photo and keywords; (5) later add the site URL to his LinkedIn profile.
 - ✋ Approved by Tiago: no — pending
+
+#### Tiago's answers (v0.1.0) — 2026-10-20
+- **Tiago:** (v0.1.0) LinkedIn profile URL: https://www.linkedin.com/in/tiagomaslopes/ (to replace the placeholder in the page and JSON-LD `sameAs`).
+- **Tiago:** (v0.1.0) The repository may be public (informed yes, step 1 of "Tiago's own steps" above).
+- **Tiago:** (v0.1.0) Asked for instructions on how to enable GitHub Pages (step 3); given in the reply. Still pending from Tiago: photo, target keywords, acceptance of the temporary Pages URL, and spec approval.
