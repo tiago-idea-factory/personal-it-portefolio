@@ -12,7 +12,7 @@ One row per feature, never deleted. A removed feature keeps its row and gets a "
 
 | ID | Feature | Added in | Removed in | PR | Notes |
 |----|---------|----------|------------|----|-------|
-| F-001 | Portfolio page | v0.1.0 | — | | Hand-written HTML/CSS, LinkedIn button, SEO, Open Graph, JSON-LD, relative paths |
+| F-001 | Portfolio page | v0.1.0 | — | #1 | Hand-written HTML/CSS, LinkedIn button, SEO, Open Graph, JSON-LD, relative paths |
 | F-002 | Release check | v0.1.0 | — | | `scripts/check.sh` with `--release <tag>` |
 | F-003 | GitHub Pages publishing | v0.1.0 | — | | `.github/workflows/pages.yml`; `deploy.yml` unchanged |
 
