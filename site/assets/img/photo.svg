@@ -1,0 +1,6 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="400" height="400" viewBox="0 0 400 400" role="img" aria-label="Placeholder photo">
+  <rect width="400" height="400" fill="#5a6b80"/>
+  <circle cx="200" cy="160" r="70" fill="#dfe5ec"/>
+  <path d="M60 400a140 140 0 0 1 280 0z" fill="#dfe5ec"/>
+  <text x="200" y="385" font-family="sans-serif" font-size="22" font-weight="700" text-anchor="middle" fill="#ffffff">TODO-PLACEHOLDER PHOTO</text>
+</svg>

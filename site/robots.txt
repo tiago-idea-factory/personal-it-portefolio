@@ -1,0 +1,4 @@
+User-agent: *
+Allow: /
+
+Sitemap: https://tiago-idea-factory.github.io/personal-it-portefolio/sitemap.xml

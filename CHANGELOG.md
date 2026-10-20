@@ -5,6 +5,8 @@ Format: [Keep a Changelog](https://keepachangelog.com/en/1.1.0/). Versioning: [S
 Every entry references the feature ID, the PR, and the debate/spec sections behind it.
 
 ## [Unreleased]
+### Added
+- F-001: Portfolio page, v0.1.0 (placeholder content, LinkedIn button, SEO/Open Graph/JSON-LD, version meta, robots.txt, sitemap.xml, relative paths). Debate: docs/debate.md#round-1--target-v010--2026-10-20 · Spec: docs/spec.md#f-001--portfolio-page
 
 <!--
 ## [0.1.0] - YYYY-MM-DD

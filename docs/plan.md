@@ -5,7 +5,7 @@ Status: proposed
 A static, single-page professional portfolio for Tiago, mirroring his LinkedIn profile, optimised for recruiters, ATS systems, search crawlers and bots, hosted initially on GitHub Pages, and sending visitors to his LinkedIn profile (no CV download).
 
 ## Features
-- [ ] F-001: Portfolio page — hand-written `site/index.html` and CSS with the full record, a LinkedIn button, SEO metadata, Open Graph, JSON-LD Person, version meta, `robots.txt`, `sitemap.xml` and placeholder assets, all with relative paths
+- [x] F-001: Portfolio page — hand-written `site/index.html` and CSS with the full record, a LinkedIn button, SEO metadata, Open Graph, JSON-LD Person, version meta, `robots.txt`, `sitemap.xml` and placeholder assets, all with relative paths
 - [ ] F-002: Release check — `scripts/check.sh` with a `--release <tag>` mode that blocks placeholders, stale versions and bad URLs
 - [ ] F-003: GitHub Pages publishing — separate `.github/workflows/pages.yml` that runs the release check and then publishes `site/` to GitHub Pages
 
