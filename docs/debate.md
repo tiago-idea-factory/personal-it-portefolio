@@ -62,6 +62,15 @@ Every debate round targets one version. A round ends with a conclusion that feed
 - **Architect:** (v0.1.0) Main risks: (1) LinkedIn previews and SEO cannot fully work on a LAN-only address; BASE_URL stays configurable and a public domain is a later step outside the factory setup. (2) CV PDF out of sync with the page; mitigate with a build check on key fields, or generate the PDF from the page via print CSS (analyst question 3). (3) Lighthouse >= 90 is easy with static files if images are optimised and fonts are system fonts (no third-party requests). (4) Placeholders shipped by mistake; the build check covers it. (5) Privacy: only public contact fields Tiago confirms.
 - **Architect:** (v0.1.0) Verification: `scripts/check.sh` (HTML well-formed, JSON-LD parses, required meta tags present, page weight under 500 KB excluding PDF, no external requests); Lighthouse run manually.
 
+### Developer — build split for v0.1.0
+- **Developer:** (v0.1.0) I back Architect Option A, kept small. Proposed features, in order, each reviewable on its own:
+  1. F-001 Content model and build — `content/profile.json` (with `TODO-PLACEHOLDER` values), `scripts/build.sh` plus one dependency-free script, one template, a single `BASE_URL`. Renders a minimal valid `site/index.html`, `robots.txt`, `sitemap.xml`. Build fails on leftover placeholders in release mode.
+  2. F-002 Page sections and styling — header with LinkedIn button, summary, experience, skills, education, certifications, contact, mobile-first CSS with system fonts, print CSS, `404.html`. No JS.
+  3. F-003 SEO and sharing — title/description/canonical, Open Graph and Twitter tags, JSON-LD Person, `og-image.png` 1200x630.
+  4. F-004 CV PDF and `scripts/check.sh` — PDF link with file size, checks for well-formed HTML, JSON-LD, meta tags, page weight under 500 KB, no external requests.
+- **Developer:** (v0.1.0) Flags: (a) placeholders vs. deploy — the placeholder check must be a release-mode flag, otherwise early deploys fail before Tiago provides content. (b) The generated `site/` is committed, so PRs include generated diffs; the Reviewer should check the `build.sh` output is current. (c) The CV PDF is bigger than it looks: either Tiago supplies the file, or we generate it from the page via print CSS, which needs a headless browser the runner may not have. I suggest Tiago supplies the PDF for v0.1.0 and the check only verifies the link and file exist. (d) Lighthouse cannot run in CI without Chrome; keep it a manual step, as the Architect said. (e) Photo and OG image need real assets from Tiago; until then a clearly marked placeholder image is used.
+- **Developer:** (v0.1.0) Open questions that block a real release (not the build): Tiago's LinkedIn URL, public contact fields, photo, CV PDF, target keywords, and language (English assumed). I agree with the Analyst that "blog coming soon" should be omitted.
+
 ### Conclusion (draft, awaiting round table)
 - Proposed scope for v0.1.0: portfolio landing page optimised for recruiters, search engines and bots.
 - Postponed to v0.2.0: blog/posts.
